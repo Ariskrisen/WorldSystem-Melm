@@ -35,6 +35,10 @@ public class GeneratorSettings {
     }
 
     public static GeneratorSettings fromConfig(ConfigurationSection section) {
+        if (section == null) {
+            return new GeneratorSettings();
+        }
+        
         long seed = section.getLong("seed", 0);
         String envStr = section.getString("environment");
         String typeStr = section.getString("type");
@@ -72,7 +76,7 @@ public class GeneratorSettings {
             creator.generator(generator);
 
         if (biomeProvider != null && biomeProvider.hasCustomBiomes()) {
-            biomeProvider.applyToWorldCreator(creator, seed);
+            creator.biomeProvider(biomeProvider);
         }
 
         return creator;

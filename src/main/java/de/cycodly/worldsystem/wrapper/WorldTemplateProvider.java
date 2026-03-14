@@ -75,7 +75,12 @@ public class WorldTemplateProvider {
             if (section.isInt(key + ".cost"))
                 cost = section.getInt(key + ".cost");
 
-            GeneratorSettings settings = GeneratorSettings.fromConfig(section.getConfigurationSection(key + ".generator"));
+            GeneratorSettings settings;
+            if (section.contains(key + ".generator")) {
+                settings = GeneratorSettings.fromConfig(section.getConfigurationSection(key + ".generator"));
+            } else {
+                settings = new GeneratorSettings();
+            }
 
             TEMPLATES.put(name, new WorldTemplate(name, permission, cost, settings));
         }
