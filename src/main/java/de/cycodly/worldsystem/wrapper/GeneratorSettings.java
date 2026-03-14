@@ -1,23 +1,62 @@
 package de.cycodly.worldsystem.wrapper;
 
-import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
+import org.bukkit.configuration.ConfigurationSection;
 
-@AllArgsConstructor
+@Getter
 public class GeneratorSettings {
-    final private long seed;
-    final private World.Environment environment;
-    final private WorldType type;
-    final private String generator;
+    private final long seed;
+    private final World.Environment environment;
+    private final WorldType type;
+    private final String generator;
+    private final CustomBiomeProvider biomeProvider;
 
-    // Default generatorsettings
+    public GeneratorSettings(long seed, World.Environment environment, WorldType type, String generator, CustomBiomeProvider biomeProvider) {
+        this.seed = seed;
+        this.environment = environment;
+        this.type = type;
+        this.generator = generator;
+        this.biomeProvider = biomeProvider;
+    }
+
+    public GeneratorSettings(long seed, World.Environment environment, WorldType type, String generator) {
+        this(seed, environment, type, generator, new CustomBiomeProvider());
+    }
+
     public GeneratorSettings() {
         type = null;
         environment = null;
         seed = 0;
         generator = null;
+        biomeProvider = new CustomBiomeProvider();
+    }
+
+    public static GeneratorSettings fromConfig(ConfigurationSection section) {
+        long seed = section.getLong("seed", 0);
+        String envStr = section.getString("environment");
+        String typeStr = section.getString("type");
+        String generator = section.getString("plugin");
+        
+        World.Environment env = null;
+        if (envStr != null) {
+            try {
+                env = World.Environment.valueOf(envStr);
+            } catch (Exception ignored) {}
+        }
+        
+        WorldType worldType = null;
+        if (typeStr != null) {
+            try {
+                worldType = WorldType.valueOf(typeStr);
+            } catch (Exception ignored) {}
+        }
+        
+        CustomBiomeProvider biomeProvider = new CustomBiomeProvider(section);
+        
+        return new GeneratorSettings(seed, env, worldType, generator, biomeProvider);
     }
 
     public WorldCreator asWorldCreator(String name) {
@@ -31,6 +70,10 @@ public class GeneratorSettings {
             creator.seed(seed);
         if (generator != null && !generator.trim().isEmpty())
             creator.generator(generator);
+
+        if (biomeProvider != null && biomeProvider.hasCustomBiomes()) {
+            biomeProvider.applyToWorldCreator(creator, seed);
+        }
 
         return creator;
     }
