@@ -283,17 +283,48 @@ worldchoose:
   template_default:
     enabled: true
     slot:
-      row: 2
-      col: 3
+      row: 1
+      col: 2
     material: GRASS_BLOCK
     display: '&aDefault template'
+    lore:
+      - '&7Standard world generation'
+      - '&7with all biomes'
 
-  another_template:
+  template_meadows:
+    enabled: true
+    slot:
+      row: 1
+      col: 5
+    material: GRASS_BLOCK
+    display: '&aЛуга'
+    lore:
+      - '&7Равнины, луга, леса'
+      - '&7PLAINS, FOREST, MEADOW'
+      - '&eCost: 50'
+
+  template_desert:
+    enabled: true
+    slot:
+      row: 1
+      col: 8
+    material: SAND
+    display: '&6Пустыня'
+    lore:
+      - '&7Пустыня, саванна, джунгли'
+      - '&7DESERT, SAVANNA, JUNGLE'
+      - '&eCost: 100'
+
+  template_snow:
     enabled: true
     slot:
       row: 2
-      col: 7
-    material: STONE
-    display: '&aAnother template'
+      col: 3
+    material: SNOW_BLOCK
+    display: '&bСнег'
+    lore:
+      - '&7Заснеженные биомы'
+      - '&7SNOWY_PLAINS, ICE_SPIKES'
+      - '&eCost: 150'
 
 

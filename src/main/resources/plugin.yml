@@ -47,6 +47,10 @@ permissions:
     default: true
     description: You can create a world via /ws get
 
+  ws.get.admin:
+    default: op
+    description: You can give a world to another player via /ws get <player> <template>
+
   ws.delete:
     default: op
     description: You can delete a world

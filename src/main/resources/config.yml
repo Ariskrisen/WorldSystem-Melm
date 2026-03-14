@@ -147,3 +147,88 @@ worldtemplates:
         # Put in here the name of a generator
         # If you have one from one plugin
         plugin: ''
+        # Custom biomes for this template
+        # biome_size: 4.0
+        # biomes:
+        #   - DESERT
+        #   - BADLANDS
+        #   - SAVANNA
+    3:
+      name: 'template_meadows'
+      permission: ws.template.meadows
+      cost: 50
+      generator:
+        seed: 0
+        environment: NORMAL
+        type: NORMAL
+        plugin: ''
+        biomes:
+          PLAINS: 8
+          MEADOW: 4
+          CHERRY_GROVE: 3
+          FOREST: 6
+          BIRCH_FOREST: 4
+          DARK_FOREST: 3
+          FLOWER_FOREST: 3
+          SWAMP: 2
+          MANGROVE_SWAMP: 2
+          RIVER: 3
+          BEACH: 2
+    4:
+      name: 'template_snow'
+      permission: ws.template.snow
+      cost: 150
+      generator:
+        seed: 0
+        environment: NORMAL
+        type: NORMAL
+        plugin: ''
+        biomes:
+          SNOWY_PLAINS: 8
+          ICE_SPIKES: 3
+          SNOWY_TAIGA: 4
+          TAIGA: 3
+          OLD_GROWTH_SPRUCE_TAIGA: 2
+          JAGGED_PEAKS: 3
+          FROZEN_PEAKS: 2
+          SNOWY_SLOPES: 2
+          FROZEN_RIVER: 3
+          BEACH: 2
+    5:
+      name: 'template_desert'
+      permission: ws.template.desert
+      cost: 100
+      generator:
+        seed: 0
+        environment: NORMAL
+        type: NORMAL
+        plugin: ''
+        biomes:
+          DESERT: 10
+          SAVANNA: 5
+          WINDSWEPT_SAVANNA: 3
+          JUNGLE: 3
+          BAMBOO_JUNGLE: 2
+          BADLANDS: 3
+          WOODED_BADLANDS: 2
+          ERODED_BADLANDS: 2
+          WINDSWEPT_HILLS: 2
+          RIVER: 3
+          BEACH: 2
+    6:
+      name: 'template_ocean'
+      permission: ws.template.ocean
+      cost: 200
+      generator:
+        seed: 0
+        environment: NORMAL
+        type: NORMAL
+        plugin: ''
+        biomes:
+          OCEAN: 5
+          DEEP_OCEAN: 3
+          WARM_OCEAN: 2
+          LUKEWARM_OCEAN: 2
+          COLD_OCEAN: 2
+          FROZEN_OCEAN: 2
+          BEACH: 3
