@@ -9,6 +9,7 @@ import de.cycodly.worldsystem.wrapper.SystemWorld;
 import de.cycodly.worldsystem.wrapper.WorldPlayer;
 import java.util.HashMap;
 import java.util.UUID;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -33,7 +34,10 @@ public class PlayerListener implements Listener {
             if (dc.hasWorld()) {
                 SystemWorld sw = SystemWorld.getSystemWorld(dc.getWorldname());
                 if (sw != null && !sw.isLoaded()) {
-                    e.getPlayer().teleport(PluginConfig.getSpawn(e.getPlayer()));
+                    Location spawnLoc = PluginConfig.getSpawn(e.getPlayer());
+                    if (spawnLoc != null && spawnLoc.getWorld() != null) {
+                        e.getPlayer().teleport(spawnLoc);
+                    }
                 }
             }
         }
@@ -47,7 +51,7 @@ public class PlayerListener implements Listener {
         // Save last location for #23
         if (player.isOnSystemWorld()) {
             WorldConfig config = WorldConfig.getWorldConfig(player.getWorldname());
-            PlayerPositions.getInstance().saveWorldsPlayerLocation(p, config);
+            PlayerPositions.instance.saveWorldsPlayerLocation(p, config);
         }
         SystemWorld.tryUnloadLater(w);
     }

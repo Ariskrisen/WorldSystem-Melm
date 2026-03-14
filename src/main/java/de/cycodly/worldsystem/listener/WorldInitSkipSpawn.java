@@ -19,6 +19,14 @@ public class WorldInitSkipSpawn implements Listener {
             return;
         }
         SettingsConfig.editWorld(world);
-        world.setGameRule(GameRule.SPAWN_CHUNK_RADIUS, 0);
+        try {
+            // Use reflection or getByName to avoid NoSuchFieldError at class load time
+            GameRule<?> rule = GameRule.getByName("spawnChunkRadius");
+            if (rule != null) {
+                world.setGameRule((GameRule<Integer>) rule, 0);
+            }
+        } catch (Exception ignored) {
+            // GameRule not available in this version or other issue
+        }
     }
 }
