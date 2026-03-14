@@ -4,7 +4,7 @@ val pluginauthors = "[Butzlabben, Trainerlord, Cycodly]"
 val pluginversion = "2.4.40"
 val plugindescription = "Worldsystem - Let players create thier own worlds"
 val pluginapiversion = "1.16"
-val pluginminecraft = "1.21.4"
+val pluginminecraft = "1.21.10"
 val plugindepend = "[WorldEdit]"
 val pluginsoftdepend = "[PlaceholderAPI, Vault, Chunky]"
 
