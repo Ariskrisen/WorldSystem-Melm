@@ -1,6 +1,7 @@
 package de.cycodly.worldsystem.commands;
 
 import de.cycodly.worldsystem.util.WorldUtils;
+import de.cycodly.worldsystem.wrapper.WorldTemplate;
 import de.cycodly.worldsystem.wrapper.WorldTemplateProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -108,6 +109,10 @@ public class CommandRegistry implements TabExecutor {
         List<String> subCommands = new ArrayList<>(Arrays.asList("get", "home", "sethome", "gui", "tp", "addmember", "delmember", "leave", "tnt", "fire", "togglegm", "togglebuild", "toggletp", "togglewe", "info", "reset"));
         if (sender.hasPermission("ws.delete")) subCommands.add("delete");
         List<String> playerCompletions = Arrays.asList("addmember", "delmember", "tp","togglegm", "togglebuild", "toggletp", "togglewe", "delete");
+        List<String> getCompletions = Arrays.asList("get");
+        if (sender.hasPermission("ws.get.admin")) {
+            getCompletions = Arrays.asList("get");
+        }
         List<String> completions = new ArrayList<>();
         List<String> playerNames = new ArrayList<>();
         for (Player p : Bukkit.getOnlinePlayers()) {
@@ -123,6 +128,28 @@ public class CommandRegistry implements TabExecutor {
         if (args.length == 2 && playerCompletions.contains(args[0].toLowerCase())) {
             for(String s : playerNames) {
                 if (s.toLowerCase().startsWith(args[1].toLowerCase())) completions.add(s);
+            }
+        }
+        
+        // Tab completion for /ws get <player> <template>
+        if (args.length == 2 && args[0].equalsIgnoreCase("get") && sender.hasPermission("ws.get.admin")) {
+            for(String s : playerNames) {
+                if (s.toLowerCase().startsWith(args[1].toLowerCase())) completions.add(s);
+            }
+        }
+        
+        if (args.length == 3 && args[0].equalsIgnoreCase("get") && sender.hasPermission("ws.get.admin")) {
+            try {
+                WorldTemplateProvider provider = WorldTemplateProvider.getInstance();
+                if (provider != null) {
+                    for (WorldTemplate template : provider.getTemplates()) {
+                        if (template.getName().toLowerCase().startsWith(args[2].toLowerCase())) {
+                            completions.add(template.getName());
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
+                // Plugin not fully loaded yet
             }
         }
 

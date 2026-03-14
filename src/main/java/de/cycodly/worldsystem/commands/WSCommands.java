@@ -73,6 +73,12 @@ public class WSCommands {
 
 
     public boolean getCommand(CommandSender sender, Command command, String label, String[] args) {
+        // Admin command: /ws get <player> <template>
+        if (args.length >= 3 && sender.hasPermission("ws.get.admin")) {
+            return adminGetCommand(sender, args);
+        }
+        
+        // Regular player command
         if (sender instanceof Player) {
             Player p = (Player)sender;
 
@@ -131,6 +137,89 @@ public class WSCommands {
             return false;
         }
 
+    }
+
+    public boolean adminGetCommand(CommandSender sender, String[] args) {
+        String playerName = args[1];
+        String templateName = args[2];
+        
+        // Get the player
+        Player targetPlayer = Bukkit.getPlayer(playerName);
+        if (targetPlayer == null) {
+            // Try offline player
+            var offlinePlayers = Bukkit.getOfflinePlayers();
+            java.util.UUID targetUUID = null;
+            for (var offline : offlinePlayers) {
+                if (offline.getName() != null && offline.getName().equalsIgnoreCase(playerName)) {
+                    targetUUID = offline.getUniqueId();
+                    break;
+                }
+            }
+            
+            if (targetUUID == null) {
+                sender.sendMessage(PluginConfig.getPrefix() + "§cPlayer not found: " + playerName);
+                return false;
+            }
+            
+            // Check if player already has a world
+            DependenceConfig dc = new DependenceConfig(targetUUID);
+            if (dc.hasWorld()) {
+                sender.sendMessage(PluginConfig.getPrefix() + "§cPlayer already has a world");
+                return false;
+            }
+            
+            // Get the template
+            WorldTemplate template = WorldTemplateProvider.getInstance().getTemplate(templateName);
+            if (template == null) {
+                sender.sendMessage(PluginConfig.getPrefix() + "§cTemplate not found: " + templateName);
+                return false;
+            }
+            
+            // Create the world
+            final WorldTemplate finalTemplate = template;
+            final java.util.UUID finalUUID = targetUUID;
+            Bukkit.getScheduler().runTask(WorldSystem.getInstance(), () -> {
+                if (SystemWorld.create(finalUUID, finalTemplate)) {
+                    sender.sendMessage(PluginConfig.getPrefix() + "§aWorld created for " + playerName + " with template " + templateName);
+                } else {
+                    sender.sendMessage(PluginConfig.getPrefix() + "§cFailed to create world for " + playerName);
+                }
+            });
+            return true;
+        }
+        
+        // Online player
+        // Check if player already has a world
+        DependenceConfig dc = new DependenceConfig(targetPlayer);
+        if (dc.hasWorld()) {
+            sender.sendMessage(PluginConfig.getPrefix() + "§cPlayer already has a world");
+            return false;
+        }
+        
+        // Get the template
+        WorldTemplate template = WorldTemplateProvider.getInstance().getTemplate(templateName);
+        if (template == null) {
+            sender.sendMessage(PluginConfig.getPrefix() + "§cTemplate not found: " + templateName);
+            return false;
+        }
+        
+        // Permission for this specific template (check if target player has permission)
+        if (template.getPermission() != null && !targetPlayer.hasPermission(template.getPermission())) {
+            sender.sendMessage(PluginConfig.getPrefix() + "§cTarget player doesn't have permission for this template");
+            return false;
+        }
+        
+        // Create the world
+        final WorldTemplate finalTemplate = template;
+        Bukkit.getScheduler().runTask(WorldSystem.getInstance(), () -> {
+            if (SystemWorld.create(targetPlayer, finalTemplate)) {
+                sender.sendMessage(PluginConfig.getPrefix() + "§aWorld created for " + playerName + " with template " + templateName);
+                targetPlayer.sendMessage(MessageConfig.getSettingUpWorld());
+            } else {
+                sender.sendMessage(PluginConfig.getPrefix() + "§cFailed to create world for " + playerName);
+            }
+        });
+        return true;
     }
     public boolean homeCommand(CommandSender sender, Command command, String label, String[] args) {
 
