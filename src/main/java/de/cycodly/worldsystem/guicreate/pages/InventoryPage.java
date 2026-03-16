@@ -19,29 +19,36 @@ public class InventoryPage extends OrcInventory {
     private int i = 0;
 
     public InventoryPage(String title, int page, int pages) {
-        super(title, 6);
+        super(title, GuiConfig.getRows("options.players"));
 
         YamlConfiguration getConf = GuiConfig.getConfig();
         String path = "options.players.currentpage";
 
-        OrcItem oi = new OrcItem(GuiConfig.getMaterial(getConf, path), GuiConfig.getDisplay(getConf, path).replaceAll("%page", "" + page), GuiConfig.getLore(getConf, path));
-        addItem(GuiConfig.getSlot(path), oi);
+        if (GuiConfig.isEnabled(path)) {
+            OrcItem oi = new OrcItem(GuiConfig.getItemStack(getConf, path));
+            oi.setItemStack(GuiConfig.getItemStack(getConf, path), GuiConfig.getDisplay(getConf, path).replaceAll("%page", "" + page), GuiConfig.getLore(getConf, path));
+            addItem(GuiConfig.getSlot(path), oi);
+        }
 
         path = "options.players.pagebefore";
-        oi = GuiConfig.getItem(path);
-        oi.setOnClick((p, inv, item) -> {
-            p.closeInventory();
-            p.openInventory(this.before.getInventory(p));
-        });
-        addItem(GuiConfig.getSlot(path), oi);
+        if (GuiConfig.isEnabled(path)) {
+            OrcItem oi = GuiConfig.getItem(path);
+            oi.setOnClick((p, inv, item) -> {
+                p.closeInventory();
+                p.openInventory(this.before.getInventory(p));
+            });
+            addItem(GuiConfig.getSlot(path), oi);
+        }
 
         path = "options.players.nextpage";
-        oi = GuiConfig.getItem(path);
-        oi.setOnClick((p, inv, item) -> {
-            p.closeInventory();
-            p.openInventory(this.next.getInventory(p));
-        });
-        addItem(GuiConfig.getSlot(path), oi);
+        if (GuiConfig.isEnabled(path)) {
+            OrcItem oi = GuiConfig.getItem(path);
+            oi.setOnClick((p, inv, item) -> {
+                p.closeInventory();
+                p.openInventory(this.next.getInventory(p));
+            });
+            addItem(GuiConfig.getSlot(path), oi);
+        }
     }
 
     @Override

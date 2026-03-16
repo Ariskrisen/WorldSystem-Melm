@@ -17,7 +17,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import dev.lone.itemsadder.api.CustomStack;
 
 import de.cycodly.worldsystem.guicreate.OrcItem;
 import de.cycodly.worldsystem.WorldSystem;
@@ -105,14 +108,17 @@ public class GuiConfig {
     }
 
     public static String getDisplay(FileConfiguration getConf, String path) {
-        return ChatColor.translateAlternateColorCodes('&', getConf.getString(path + ".display"));
+        String display = getConf.getString(path + ".display");
+        if (display == null) return "";
+        return ChatColor.translateAlternateColorCodes('&', display);
     }
 
     public static ArrayList<String> getLore(FileConfiguration getConf, String path) {
         List<String> list = getConf.getStringList(path + ".lore");
+        if (list == null || list.isEmpty()) return new ArrayList<>();
         ArrayList<String> colored = new ArrayList<>(list.size());
         for (String s : list) {
-            colored.add(ChatColor.translateAlternateColorCodes('&', s));
+            if (s != null) colored.add(ChatColor.translateAlternateColorCodes('&', s));
         }
         return colored;
     }
@@ -122,18 +128,74 @@ public class GuiConfig {
     }
 
     public static Material getMaterial(FileConfiguration getConf, String path) {
+        String materialStr = getConf.getString(path + ".material");
+        if (materialStr == null || materialStr.isEmpty()) {
+            return Material.PAPER;
+        }
+        
+        if (materialStr.contains(":")) {
+            ItemStack customItem = getCustomItem(materialStr);
+            if (customItem != null) {
+                return customItem.getType();
+            }
+        }
+        
         try {
-            return Material.valueOf(getConf.getString(path + ".material").toUpperCase());
+            return Material.valueOf(materialStr.toUpperCase());
         } catch (IllegalArgumentException ex) {
-            Bukkit.getConsoleSender().sendMessage(PluginConfig.getPrefix() + "§cUnknown material: " + path);
+            return Material.PAPER;
+        }
+    }
+
+    public static ItemStack getItemStack(FileConfiguration getConf, String path) {
+        String materialStr = getConf.getString(path + ".material");
+        if (materialStr == null || materialStr.isEmpty()) {
+            return new ItemStack(Material.PAPER);
+        }
+        
+        if (materialStr.contains(":")) {
+            ItemStack customItem = getCustomItem(materialStr);
+            if (customItem != null) {
+                return customItem;
+            }
+        }
+        
+        try {
+            return new ItemStack(Material.valueOf(materialStr.toUpperCase()));
+        } catch (IllegalArgumentException ex) {
+            return new ItemStack(Material.PAPER);
+        }
+    }
+
+    private static ItemStack getCustomItem(String namespacedId) {
+        if (Bukkit.getPluginManager().getPlugin("ItemsAdder") == null) {
             return null;
         }
+        try {
+            String itemId = namespacedId;
+            if (namespacedId.startsWith("itemsadder-")) {
+                itemId = namespacedId.substring(11);
+            }
+            
+            CustomStack customStack = CustomStack.getInstance(itemId);
+            if (customStack != null) {
+                return customStack.getItemStack();
+            } else {
+                WorldSystem.logger().log(Level.WARNING, "CustomStack not found for: " + itemId);
+            }
+        } catch (Exception e) {
+            WorldSystem.logger().log(Level.WARNING, "Failed to get custom item " + namespacedId + ": " + e.getMessage());
+        }
+        return null;
     }
 
     public static OrcItem getItem(String path) {
         YamlConfiguration getConf = getConfig();
         try {
-            return new OrcItem(getMaterial(getConf, path), getDisplay(getConf, path), getLore(getConf, path));
+            ItemStack itemStack = getItemStack(getConf, path);
+            OrcItem item = new OrcItem(itemStack);
+            item.setItemStack(itemStack, getDisplay(getConf, path), getLore(getConf, path));
+            return item;
         } catch (Exception ignored) {
         }
         return OrcItem.error.clone().setDisplay("§c" + path);
@@ -163,7 +225,7 @@ public class GuiConfig {
         return getConfig().getBoolean(path + ".fill");
     }
 
-    public static Material getSkullItem() {
-        return getMaterial(getConfig(), "options.players.playerhead");
+    public static ItemStack getSkullItem() {
+        return getItemStack(getConfig(), "options.players.playerhead");
     }
 }

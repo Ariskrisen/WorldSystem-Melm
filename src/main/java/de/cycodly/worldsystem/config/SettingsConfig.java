@@ -165,7 +165,7 @@ public class SettingsConfig {
             w.setGameRuleValue("spectatorsGenerateChunks", cfg.getString("spectatorsGenerateChunks"));
     }
 
-    private static YamlConfiguration getConfig() {
+    public static YamlConfiguration getConfig() {
         try {
             return YamlConfiguration
                     .loadConfiguration(new InputStreamReader(new FileInputStream(FILE), StandardCharsets.UTF_8));
@@ -201,6 +201,7 @@ public class SettingsConfig {
                     config.set("worldborder.normal", 1000);
                     config.set("worldborder.center.as_spawn", true);
                     config.set("worldborder.center.as_home", false);
+                    config.set("worldborder.center.as_biome_spawn", true);
                     config.set("worldborder.center.x", 0);
                     config.set("worldborder.center.y", 64);
                     config.set("worldborder.center.z", 0);

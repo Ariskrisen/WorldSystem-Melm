@@ -3,11 +3,14 @@ package de.cycodly.worldsystem.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -173,6 +176,39 @@ public class WorldSettingsCommands {
 
             WorldConfig wc = WorldConfig.getWorldConfig(dc.getWorldname());
             boolean tnt = wc.isTnt();
+            
+            if (args.length > 1) {
+                String value = args[1].toLowerCase();
+                if (value.equals("true") || value.equals("false")) {
+                    boolean newValue = value.equals("true");
+                    if (newValue == tnt) {
+                        p.sendMessage(PluginConfig.getPrefix() + (tnt ? "§cTNT is already enabled!" : "§cTNT is already disabled!"));
+                        return true;
+                    }
+                    WorldToggleTntEvent event = new WorldToggleTntEvent(p, SystemWorld.getSystemWorld(dc.getWorldname()), tnt);
+                    Bukkit.getPluginManager().callEvent(event);
+                    if (event.isCancelled())
+                        return false;
+
+                    wc.setTnt(p.getUniqueId(), newValue);
+                    try {
+                        wc.save();
+                    } catch (IOException e) {
+                        p.sendMessage(PluginConfig.getPrefix() + "§cSomething went wrong");
+                        e.printStackTrace();
+                    }
+                    if (newValue) {
+                        p.sendMessage(MessageConfig.getToggleTntEnabled());
+                    } else {
+                        p.sendMessage(MessageConfig.getToggleTntDisabled());
+                    }
+                    return true;
+                } else {
+                    p.sendMessage(MessageConfig.getWrongUsage().replaceAll("%usage", "/ws tnt <true|false>"));
+                    return false;
+                }
+            }
+
             WorldToggleTntEvent event = new WorldToggleTntEvent(p, SystemWorld.getSystemWorld(dc.getWorldname()), tnt);
             Bukkit.getPluginManager().callEvent(event);
             if (event.isCancelled())
@@ -209,6 +245,40 @@ public class WorldSettingsCommands {
 
             WorldConfig wc = WorldConfig.getWorldConfig(dc.getWorldname());
             boolean fire = wc.isFire();
+            
+            if (args.length > 1) {
+                String value = args[1].toLowerCase();
+                if (value.equals("true") || value.equals("false")) {
+                    boolean newValue = value.equals("true");
+                    if (newValue == fire) {
+                        p.sendMessage(PluginConfig.getPrefix() + (fire ? "§cFire is already enabled!" : "§cFire is already disabled!"));
+                        return true;
+                    }
+                    WorldToggleFireEvent event = new WorldToggleFireEvent(p, SystemWorld.getSystemWorld(dc.getWorldname()),
+                            fire);
+                    Bukkit.getPluginManager().callEvent(event);
+                    if (event.isCancelled())
+                        return false;
+
+                    wc.setFire(p.getUniqueId(), newValue);
+                    try {
+                        wc.save();
+                    } catch (IOException e) {
+                        p.sendMessage(PluginConfig.getPrefix() + "§cSomething went wrong");
+                        e.printStackTrace();
+                    }
+                    if (newValue) {
+                        p.sendMessage(MessageConfig.getToggleFireEnabled());
+                    } else {
+                        p.sendMessage(MessageConfig.getToggleFireDisabled());
+                    }
+                    return true;
+                } else {
+                    p.sendMessage(MessageConfig.getWrongUsage().replaceAll("%usage", "/ws fire <true|false>"));
+                    return false;
+                }
+            }
+
             WorldToggleFireEvent event = new WorldToggleFireEvent(p, SystemWorld.getSystemWorld(dc.getWorldname()),
                     fire);
             Bukkit.getPluginManager().callEvent(event);
@@ -231,6 +301,24 @@ public class WorldSettingsCommands {
             return true;
         } else {
             sender.sendMessage("No Console"); // TODO Get Config
+            return false;
+        }
+    }
+
+    public boolean playersCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (sender instanceof Player) {
+            Player p = (Player) sender;
+            DependenceConfig dc = new DependenceConfig(p);
+            if (!dc.hasWorld()) {
+                p.sendMessage(MessageConfig.getNoWorldOwn());
+                return false;
+            }
+
+            // Open players GUI directly
+            de.cycodly.worldsystem.gui.PlayersPageGUI.openGUI(p);
+            return true;
+        } else {
+            sender.sendMessage("No Console");
             return false;
         }
     }

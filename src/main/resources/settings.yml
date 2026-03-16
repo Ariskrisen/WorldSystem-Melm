@@ -16,6 +16,8 @@ worldborder:
     as_spawn: true
     # Should the worldborder move with the home set by the owner
     as_home: false
+    # Move worldborder to player spawn location when spawning in custom biome
+    as_biome_spawn: true
     x: 0
     y: 20
     z: 0

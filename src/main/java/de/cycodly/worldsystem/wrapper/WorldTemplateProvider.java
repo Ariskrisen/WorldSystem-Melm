@@ -75,6 +75,10 @@ public class WorldTemplateProvider {
             if (section.isInt(key + ".cost"))
                 cost = section.getInt(key + ".cost");
 
+            String spawnBiome = null;
+            if (section.isString(key + ".spawn"))
+                spawnBiome = section.getString(key + ".spawn");
+
             GeneratorSettings settings;
             if (section.contains(key + ".generator")) {
                 settings = GeneratorSettings.fromConfig(section.getConfigurationSection(key + ".generator"));
@@ -82,7 +86,7 @@ public class WorldTemplateProvider {
                 settings = new GeneratorSettings();
             }
 
-            TEMPLATES.put(name, new WorldTemplate(name, permission, cost, settings));
+            TEMPLATES.put(name, new WorldTemplate(name, permission, cost, settings, spawnBiome));
         }
     }
 

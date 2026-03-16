@@ -126,6 +126,17 @@ public class OrcItem {
         return setItemStack(mat, display, Arrays.asList(lore));
     }
 
+    public OrcItem setItemStack(ItemStack is, String display, List<String> lore) {
+        this.is = is.clone();
+        this.is.setAmount(1);
+        ItemMeta meta = this.is.getItemMeta();
+        meta.setDisplayName(display);
+        meta.setLore(lore);
+        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        this.is.setItemMeta(meta);
+        return this;
+    }
+
     public OrcItem setDepend(DependListener listener) {
         depend = listener;
         return this;

@@ -90,6 +90,8 @@ public class CommandRegistry implements TabExecutor {
                     return settings.tntCommand(sender, command, label, args);
                 case "fire":
                     return settings.fireCommand(sender, command, label, args);
+                case "players":
+                    return settings.playersCommand(sender, command, label, args);
                 case "reload":
                     if(!sender.isOp()){
                         sender.sendMessage("Reloading Settings!");
@@ -106,10 +108,11 @@ public class CommandRegistry implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        List<String> subCommands = new ArrayList<>(Arrays.asList("get", "home", "sethome", "gui", "tp", "addmember", "delmember", "leave", "tnt", "fire", "togglegm", "togglebuild", "toggletp", "togglewe", "info", "reset"));
+        List<String> subCommands = new ArrayList<>(Arrays.asList("get", "home", "sethome", "gui", "tp", "addmember", "delmember", "leave", "tnt", "fire", "players", "togglegm", "togglebuild", "toggletp", "togglewe", "info", "reset"));
         if (sender.hasPermission("ws.delete")) subCommands.add("delete");
         List<String> playerCompletions = Arrays.asList("addmember", "delmember", "tp","togglegm", "togglebuild", "toggletp", "togglewe", "delete");
         List<String> getCompletions = Arrays.asList("get");
+        List<String> booleanCompletions = Arrays.asList("true", "false");
         if (sender.hasPermission("ws.get.admin")) {
             getCompletions = Arrays.asList("get");
         }
@@ -128,6 +131,20 @@ public class CommandRegistry implements TabExecutor {
         if (args.length == 2 && playerCompletions.contains(args[0].toLowerCase())) {
             for(String s : playerNames) {
                 if (s.toLowerCase().startsWith(args[1].toLowerCase())) completions.add(s);
+            }
+        }
+        
+        // Tab completion for /ws fire true/false
+        if (args.length == 2 && args[0].equalsIgnoreCase("fire")) {
+            for(String s : booleanCompletions) {
+                if (s.startsWith(args[1].toLowerCase())) completions.add(s);
+            }
+        }
+        
+        // Tab completion for /ws tnt true/false
+        if (args.length == 2 && args[0].equalsIgnoreCase("tnt")) {
+            for(String s : booleanCompletions) {
+                if (s.startsWith(args[1].toLowerCase())) completions.add(s);
             }
         }
         

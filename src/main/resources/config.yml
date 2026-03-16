@@ -178,6 +178,7 @@ worldtemplates:
       name: 'template_snow'
       permission: ws.template.snow
       cost: 150
+      spawn: SNOWY_PLAINS
       generator:
         seed: 0
         environment: NORMAL
@@ -198,6 +199,7 @@ worldtemplates:
       name: 'template_desert'
       permission: ws.template.desert
       cost: 100
+      spawn: DESERT
       generator:
         seed: 0
         environment: NORMAL
@@ -219,6 +221,7 @@ worldtemplates:
       name: 'template_ocean'
       permission: ws.template.ocean
       cost: 200
+      spawn: OCEAN
       generator:
         seed: 0
         environment: NORMAL
@@ -232,3 +235,19 @@ worldtemplates:
           COLD_OCEAN: 2
           FROZEN_OCEAN: 2
           BEACH: 3
+
+  # Spawn biome configuration
+  # When a player creates a world using this template, they will spawn in the specified biome
+  # The spawn field can be added to any template to define the initial spawn biome
+  # Example:
+  #   spawn: DESERT
+  # Available biomes (1.19+): DESERT, FOREST, TAIGA, PLAINS, SAVANNA, SNOWY_TAIGA, SNOWY_PLAINS, JUNGLE, OCEAN, 
+  #   RIVER, SWAMP, MANGROVE_SWAMP, BEACH, DESERT, MOUNTAINS, WOODED_MOUNTAINS, SNOWY_MOUNTAINS, BIRCH_FOREST,
+  #   DARK_FOREST, SNOWY_BEACH, STONE_SHORE, MUSHROOM_FIELDS, THE_END, SMALL_END_ISLANDS, END_MIDLANDS, END_HIGHLANDS,
+  #   END_BARRENS, BAMBOO_JUNGLE, BADLANDS, ERODED_BADLANDS, WOODED_BADLANDS, CRIMSON_FOREST, SOUL_SAND_VALLEY,
+  #   WARPED_FOREST, BASALT_DELTAS, GIANT_TREE_TAIGA, WINDSWEPT_GRAVELLY_HILLS, WINDSWEPT_HILLS, WINDSWEPT_SAVANNA,
+  #   BADLANDS_PLATEAU, WOODED_BADLANDS_PLATEAU, SAVANNA_PLATEAU, SNOWY_BADLANDS_PLATEAU, ICE_SPIKES, SUNFLOWER_PLAINS,
+  #   FLOWER_FOREST, OLD_GROWTH_SPRUCE_TAIGA, OLD_GROWTH_PINE_TAIGA, WINDSWEPT_FOREST, TAIGA_MOUNTAINS,
+  #   SNOWY_TAIGA_MOUNTAINS, MEGA_TAIGA, MEGA_SPRUCE_TAIGA, CHERRY_GROVE, SWAMP_MOUNTAINS, FROZEN_RIVER, SNOWY_SLOPES,
+  #   FROZEN_PEAKS, JAGGED_PEAKS, STONY_PEAKS, COLD_OCEAN, LUKEWARM_OCEAN, WARM_OCEAN, THE_VOID, CUSTOMIZED, AMPLIFIED,
+  #   LARGE_BIOMES

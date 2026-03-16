@@ -44,6 +44,8 @@ public class WorldConfig {
 
     private String ownerName;
     private String templateKey;
+    private String spawnBiome;
+    private Location biomeSpawnLocation;
     private boolean fire, tnt;
 
     public Location home = null;
@@ -106,6 +108,7 @@ public class WorldConfig {
         cfg.set("Informations.Owner.Actualname",
                 Objects.requireNonNull(PlayerWrapper.getOfflinePlayer(uuid)).getName());
         cfg.set("Informations.template_key", template.getName());
+        cfg.set("Informations.spawn_biome", template.getSpawnBiome());
         cfg.set("Settings.TNTDamage", false);
         cfg.set("Settings.Fire", false);
         cfg.set("Members", null);
@@ -432,6 +435,14 @@ public class WorldConfig {
         cfg.set("Informations.Owner.Actualname", ownerName);
         cfg.set("Informations.Owner.PlayerUUID", owner.toString());
         cfg.set("Informations.template_key", templateKey);
+        cfg.set("Informations.spawn_biome", spawnBiome);
+        
+        if (biomeSpawnLocation != null) {
+            cfg.set("Settings.biome_spawn.x", biomeSpawnLocation.getX());
+            cfg.set("Settings.biome_spawn.y", biomeSpawnLocation.getY());
+            cfg.set("Settings.biome_spawn.z", biomeSpawnLocation.getZ());
+        }
+        
         cfg.set("Settings.TNTDamage", tnt);
         cfg.set("Settings.Fire", fire);
 
@@ -470,6 +481,13 @@ public class WorldConfig {
         YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
         ownerName = cfg.getString("Informations.Owner.Actualname", "Unknown Playername");
         templateKey = cfg.getString("Informations.template_key");
+        spawnBiome = cfg.getString("Informations.spawn_biome");
+        
+        if (cfg.isSet("Settings.biome_spawn")) {
+            biomeSpawnLocation = new Location(null, cfg.getDouble("Settings.biome_spawn.x"), 
+                    cfg.getDouble("Settings.biome_spawn.y"), cfg.getDouble("Settings.biome_spawn.z"));
+        }
+        
         tnt = cfg.getBoolean("Settings.TNTDamage", true);
         fire = cfg.getBoolean("Settings.Fire", true);
 
@@ -635,5 +653,21 @@ public class WorldConfig {
 
     public void setTemplateKey(String templateKey) {
         this.templateKey = templateKey;
+    }
+
+    public String getSpawnBiome() {
+        return spawnBiome;
+    }
+
+    public void setSpawnBiome(String spawnBiome) {
+        this.spawnBiome = spawnBiome;
+    }
+
+    public Location getBiomeSpawnLocation() {
+        return biomeSpawnLocation;
+    }
+
+    public void setBiomeSpawnLocation(Location location) {
+        this.biomeSpawnLocation = location;
     }
 }

@@ -33,12 +33,12 @@ public class PlayersPageGUI {
             return;
         }
 
-        PageGUICreator<Entry<UUID, String>> creator = new PageGUICreator<>(GuiConfig.getRows("options.players"));
+        PageGUICreator<Entry<UUID, String>> creator = new PageGUICreator<>(GuiConfig.getRows("options.players") * 9);
 
         creator.create(GuiConfig.getTitle(GuiConfig.getConfig(), "options.players"), members.entrySet(), (entry) -> {
             String name = entry.getValue();
-            OrcItem oi = new OrcItem(GuiConfig.getSkullItem(), GuiConfig
-                    .getDisplay(GuiConfig.getConfig(), "options.players.playerhead").replaceAll("%player", name));
+            OrcItem oi = new OrcItem(GuiConfig.getSkullItem());
+            oi.setDisplay(GuiConfig.getDisplay(GuiConfig.getConfig(), "options.players.playerhead").replaceAll("%player", name));
             SkullMeta sm = (SkullMeta) oi.getItemStack().getItemMeta();
             sm.setOwner(name);
             oi.getItemStack().setItemMeta(sm);
@@ -81,7 +81,8 @@ public class PlayersPageGUI {
                 Inventory inv = Bukkit.createInventory(null, headsPerInv);
                 for (int i = startPos; i < startPos + length; i++) {
                     String name = members.get(list.get(i));
-                    ItemStack is = new ItemStack(GuiConfig.getSkullItem(), 1, (short) 3);
+                    ItemStack is = GuiConfig.getSkullItem().clone();
+                    is.setAmount(1);
                     SkullMeta sm = (SkullMeta) is.getItemMeta();
                     sm.setOwner(name);
                     is.setItemMeta(sm);

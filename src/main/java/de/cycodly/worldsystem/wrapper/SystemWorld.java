@@ -11,7 +11,9 @@ import de.cycodly.worldsystem.util.PlayerPositions;
 import de.cycodly.worldsystem.util.PlayerWrapper;
 import de.cycodly.worldsystem.util.VersionUtil;
 import org.apache.commons.io.FileUtils;
+import org.bukkit.block.Biome;
 import org.bukkit.*;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -154,11 +156,37 @@ public class SystemWorld {
         SystemWorld sw = SystemWorld.getSystemWorld(worldname);
         sw.setCreating(true);
 
+        String templateSpawnBiome = template.getSpawnBiome();
+        
         // Run in scheduler so method returns without delay
         new BukkitRunnable() {
             @Override
             public void run() {
                 WorldSystem.getInstance().getAdapter().create(event.getWorldCreator(), sw, () -> {
+                    // Find and cache biome spawn location after world is created
+                    if (templateSpawnBiome != null && !templateSpawnBiome.isEmpty()) {
+                        World createdWorld = Bukkit.getWorld(worldname);
+                        if (createdWorld != null) {
+                            // Use Minecraft's built-in locate biome (fast and reliable)
+                            Location biomeLoc = findBiomeMinecraft(createdWorld, templateSpawnBiome);
+                            
+                            // Fallback to loaded chunks search
+                            if (biomeLoc == null) {
+                                biomeLoc = findBiomeLocation(createdWorld, templateSpawnBiome);
+                            }
+                            
+                            if (biomeLoc != null) {
+                                WorldConfig wc = WorldConfig.getWorldConfig(worldname);
+                                wc.setBiomeSpawnLocation(biomeLoc);
+                                try {
+                                    wc.save();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                    
                     // Fix for #16
                     new BukkitRunnable() {
                         @Override
@@ -406,15 +434,31 @@ public class SystemWorld {
             return;
 
         WorldConfig config = WorldConfig.getWorldConfig(worldname);
+        Location teleportLocation;
+        
         if (config.getHome() != null) {
-            p.teleport(positions.injectWorldsLocation(p, config, config.getHome()));
+            teleportLocation = positions.injectWorldsLocation(p, config, config.getHome());
         } else {
-            if (PluginConfig.useWorldSpawn()) {
-                p.teleport(positions.injectWorldsLocation(p, config, PluginConfig.getWorldSpawn(w)));
+            Location cachedBiomeSpawn = config.getBiomeSpawnLocation();
+            if (cachedBiomeSpawn != null) {
+                Location safeLoc = findSafeSpawnLocation(w, cachedBiomeSpawn.getBlockX(), cachedBiomeSpawn.getBlockZ());
+                if (safeLoc != null) {
+                    teleportLocation = safeLoc;
+                } else {
+                    teleportLocation = new Location(w, cachedBiomeSpawn.getX(), cachedBiomeSpawn.getY(), cachedBiomeSpawn.getZ());
+                }
+            } else if (PluginConfig.useWorldSpawn()) {
+                teleportLocation = PluginConfig.getWorldSpawn(w);
             } else {
-                p.teleport(positions.injectWorldsLocation(p, config, w.getSpawnLocation()));
+                teleportLocation = w.getSpawnLocation();
             }
         }
+        
+        p.teleport(teleportLocation);
+        
+        // Always update world border center to teleport location
+        w.getWorldBorder().setCenter(teleportLocation);
+        
         if (PluginConfig.isSurvival()) {
             p.setGameMode(GameMode.SURVIVAL);
         } else {
@@ -424,6 +468,123 @@ public class SystemWorld {
         OfflinePlayer owner = PlayerWrapper.getOfflinePlayer(WorldConfig.getWorldConfig(worldname).getOwner());
         DependenceConfig dc = new DependenceConfig(owner);
         dc.setLastLoaded();
+    }
+
+    private static Location findSafeSpawnLocation(World world, int x, int z) {
+        int checkY = world.getHighestBlockYAt(x, z);
+        
+        if (checkY <= 0) {
+            return null;
+        }
+        
+        // Check if the block at Y is not air (player would spawn inside block)
+        if (world.getBlockAt(x, checkY, z).getType() != Material.AIR) {
+            // Try to find a safe spot above
+            for (int y = checkY + 1; y <= checkY + 10; y++) {
+                if (world.getBlockAt(x, y, z).getType() == Material.AIR && 
+                    world.getBlockAt(x, y + 1, z).getType() != Material.AIR) {
+                    return new Location(world, x + 0.5, y, z + 0.5);
+                }
+            }
+            // Fallback: use highest block + 1
+            return new Location(world, x + 0.5, checkY + 1, z + 0.5);
+        }
+        
+        // Check if there's solid block above for player to stand on
+        if (world.getBlockAt(x, checkY + 1, z).getType() == Material.AIR) {
+            return new Location(world, x + 0.5, checkY + 1, z + 0.5);
+        }
+        
+        return new Location(world, x + 0.5, checkY, z + 0.5);
+    }
+
+    private static Location findBiomeLocation(World world, String biomeName) {
+        try {
+            Biome targetBiome = Biome.valueOf(biomeName.toUpperCase());
+            int baseX = world.getSpawnLocation().getBlockX();
+            int baseZ = world.getSpawnLocation().getBlockZ();
+            int searchRadius = 500;
+            int step = 32;
+
+            for (int i = 0; i <= searchRadius / step; i++) {
+                for (int x = -i * step; x <= i * step; x += step) {
+                    for (int z = -i * step; z <= i * step; z += step) {
+                        int checkX = baseX + x;
+                        int checkZ = baseZ + z;
+                        if (!isChunkLoaded(world, checkX, checkZ)) continue;
+                        int checkY = world.getHighestBlockYAt(checkX, checkZ);
+                        if (checkY > 0) {
+                            Biome biome = world.getBiome(checkX, checkY, checkZ);
+                            if (biome == targetBiome) {
+                                return new Location(world, checkX, checkY + 1, checkZ);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            WorldSystem.logger().warning("Invalid biome name: " + biomeName);
+        }
+        return null;
+    }
+
+    private static boolean isChunkLoaded(World world, int x, int z) {
+        return world.isChunkLoaded(x >> 4, z >> 4);
+    }
+    
+    private static Location findBiomeBySeed(World world, String biomeName) {
+        try {
+            Biome targetBiome = Biome.valueOf(biomeName.toUpperCase());
+            long seed = world.getSeed();
+            int spawnX = world.getSpawnLocation().getBlockX();
+            int spawnZ = world.getSpawnLocation().getBlockZ();
+            
+            // Use seeded random to get consistent results
+            java.util.Random random = new java.util.Random(seed);
+            
+            // Check multiple random locations in a spiral pattern
+            for (int radius = 64; radius <= 2000; radius += 64) {
+                for (int i = 0; i < 50; i++) {
+                    int angle = random.nextInt(360);
+                    int distance = radius + random.nextInt(32);
+                    
+                    int checkX = spawnX + (int)(Math.cos(Math.toRadians(angle)) * distance);
+                    int checkZ = spawnZ + (int)(Math.sin(Math.toRadians(angle)) * distance);
+                    
+                    // Load chunk temporarily to check biome
+                    Chunk chunk = world.getChunkAt(checkX >> 4, checkZ >> 4, true);
+                    if (chunk.load(true)) {
+                        int checkY = world.getHighestBlockYAt(checkX, checkZ);
+                        if (checkY > 0) {
+                            Biome biome = world.getBiome(checkX, checkY, checkZ);
+                            if (biome == targetBiome) {
+                                return new Location(world, checkX, checkY + 1, checkZ);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            WorldSystem.logger().warning("Invalid biome name: " + biomeName);
+        }
+        return null;
+    }
+    
+    private static Location findBiomeMinecraft(World world, String biomeName) {
+        try {
+            Biome targetBiome = Biome.valueOf(biomeName.toUpperCase());
+            Location spawnLoc = world.getSpawnLocation();
+            
+            // Use Minecraft's built-in locate biome (searches in expanding square)
+            var result = world.locateNearestBiome(spawnLoc, 6400, targetBiome);
+            
+            if (result != null) {
+                return result.getLocation().add(0, 1, 0); // Add 1 block above ground
+            }
+        } catch (IllegalArgumentException e) {
+            WorldSystem.logger().warning("Invalid biome name: " + biomeName);
+        }
+        return null;
     }
 
     /**

@@ -17,12 +17,14 @@ public class WorldTemplate {
     public final int slot;
     public final int cost;
     public final GeneratorSettings generatorSettings;
+    public final String spawnBiome;
 
-    public WorldTemplate(String name, String permission, int cost, GeneratorSettings generatorSettings) {
+    public WorldTemplate(String name, String permission, int cost, GeneratorSettings generatorSettings, String spawnBiome) {
         this.name = name;
         this.permission = permission;
         this.cost = cost;
         this.generatorSettings = generatorSettings;
+        this.spawnBiome = spawnBiome;
 
         this.icon = GuiConfig.getItem("worldchoose." + name);
         this.slot = GuiConfig.getSlot("worldchoose." + name);
@@ -55,5 +57,9 @@ public class WorldTemplate {
 
     public String getPermission() {
         return permission;
+    }
+
+    public String getSpawnBiome() {
+        return spawnBiome;
     }
 }
