@@ -11,6 +11,14 @@ A Minecraft plugin that allows players to create their own worlds.
 - **MySQL/SQLite Support** - Store player data in MySQL or SQLite database
 - **Economy Integration** - Optional cost for creating worlds (requires Vault)
 
+
+## Documentation
+
+| Language | Link |
+|----------|------|
+| 🇷🇺 Русский | [https://ariskrisen.github.io/Docs/docs/WorldSystem/intro/](https://ariskrisen.github.io/Docs/docs/WorldSystem/intro/) |
+| 🇬🇧 English | [https://ariskrisen.github.io/Docs/en/docs/WorldSystem/intro](https://ariskrisen.github.io/Docs/en/docs/WorldSystem/intro) |
+
 ## Commands
 
 | Command | Description |
